@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+    
+    environment {
+        VENV = 'venv'
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+               
+                git branch: 'main', url: 'https://github.com/Ahmedewes/Jenkins-Project'
+            }
+        }
+        
+        stage('Setup Python Environment') {
+            steps {
+                
+                sh "python3 -m venv ${VENV} || python -m venv ${VENV}"
+                sh "./${VENV}/bin/pip install --upgrade pip"
+                sh "./${VENV}/bin/pip install matplotlib pandas"
+            }
+        }
+        
+        stage('Run Data Pipeline & Mock GUI') {
+            steps {
+                echo 'Launching Data Engineering Dashboard in Headless Mode...'
+                
+               
+                sh "export DISPLAY=:0 && ./${VENV}/bin/python app.py || ./${VENV}/bin/python app.py"
+            }
+        }
+    }
+    
+    post {
+        success {
+            
+            echo ' SUCCESS: Data Ingestion & Metrics Pipeline Done! '
+            
+        }
+        failure {
+            echo 'Pipeline failed. Check Python logs or dependency setup.'
+        }
+    }
+}
+
+
